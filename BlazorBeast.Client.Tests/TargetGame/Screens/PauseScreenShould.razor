@@ -1,0 +1,51 @@
+﻿@inherits TestContext
+
+@code {
+    
+    [Fact]
+    public void DisplayQuitGameButton()
+    {
+        Render(@<PauseScreen OnQuit="() => { }" OnResume="() => Task.CompletedTask" />)
+            .FindByDataTestClass("quit-button")
+            .Should().HaveChildMarkup("Quit Game");
+    }
+    
+    [Fact]
+    public void PerformQuitAction_WhenQuitGameIsPressed()
+    {
+        var hasQuit = false;
+        void OnQuit() => hasQuit = true;
+        var quitButton = Render(@<PauseScreen OnQuit="@OnQuit" OnResume="() => Task.CompletedTask" />)
+            .FindByDataTestClass("quit-button");
+        
+        quitButton.Click();
+
+        hasQuit.Should().BeTrue();
+    }
+    
+    [Fact]
+    public void DisplayResumeGameButton()
+    {
+        Render(@<PauseScreen OnQuit="() => { }" OnResume="() => Task.CompletedTask" />)
+            .FindByDataTestClass("resume-button")
+            .Should().HaveChildMarkup("Resume Game");
+    }
+    
+    [Fact]
+    public void PerformResumeGameAction_WhenResumeGameIsPressed()
+    {
+        var hasResumed = false;
+        Task OnResume()
+        {
+            hasResumed = true;
+            return Task.CompletedTask;
+        }
+
+        var resumeButton = Render(@<PauseScreen OnQuit="() => { }" OnResume="@OnResume" />)
+            .FindByDataTestClass("resume-button");
+        
+        resumeButton.Click();
+
+        hasResumed.Should().BeTrue();
+    }
+}

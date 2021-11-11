@@ -1,0 +1,21 @@
+﻿@page "/"
+
+<HeadContent>
+    <title>@Title</title>
+    <meta name="og:title" content="@Title" />
+    <meta name="description" content="@Description" />
+    <meta name="og:description" content="@Description" />
+</HeadContent>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <Game/>
+        </div>
+    </div>
+</div>
+
+@code {
+        private const string Title = "The Game | Blazor Beast";
+        private const string Description = "Blazor Beast is a demo app written in Blazor for .Net Conf 2021 by @srpeirce";
+}

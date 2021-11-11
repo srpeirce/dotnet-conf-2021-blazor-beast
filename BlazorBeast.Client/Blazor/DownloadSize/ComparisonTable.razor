@@ -1,0 +1,92 @@
+﻿<table class="table table-hover bordered">
+  <thead>
+  <tr>
+    <th scope="col">Release Publish</th>
+    <td>x</td>
+    <td>x</td>
+    <td>x</td>
+    <td>x</td>
+  </tr>
+  <tr>
+    <th scope="col">BlazorEnableTimeZoneSupport = FALSE</th>
+    <td></td>
+    <td>x</td>
+    <td>x</td>
+    <td>x</td>
+  </tr>
+  <tr>
+    <th scope="col">InvariantGlobalization = True</th>
+    <td></td>
+    <td></td>
+    <td>x</td>
+    <td>x</td>
+  </tr>
+  <tr>
+    <th scope="col">ILLinker (wasm workload)</th>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>x</td>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <th scope="row">dotnet.timezones.blat</th>
+    <td>@AllDownloadSizes.ReleasePublish.TimeZones</td>
+    <td>0 KB (-43.6 KB)</td>
+    <td>0 KB</td>
+    <td>0 KB</td>
+  </tr>
+  <tr>
+    <th scope="row">Dlls</th>
+    <td>@AllDownloadSizes.ReleasePublish.Dlls</td>
+    <td>@AllDownloadSizes.DisableTimeZoneSupport.Dlls</td>
+    <td>@AllDownloadSizes.InvariantGlobalization.Dlls</td>
+    <td>@AllDownloadSizes.ILLinker.Dlls</td>
+  </tr>
+  <tr>
+    <th scope="row">blazor.webassembly.js</th>
+    <td>@AllDownloadSizes.ReleasePublish.BlazorWebAssemblyJs</td>
+    <td>@AllDownloadSizes.DisableTimeZoneSupport.BlazorWebAssemblyJs</td>
+    <td>@AllDownloadSizes.InvariantGlobalization.BlazorWebAssemblyJs</td>
+    <td>@AllDownloadSizes.ILLinker.BlazorWebAssemblyJs</td>
+  </tr>
+  <tr>
+    <th scope="row">dotnet.x.x.x.js</th>
+    <td>@AllDownloadSizes.ReleasePublish.DotnetJs</td>
+    <td>@AllDownloadSizes.DisableTimeZoneSupport.DotnetJs</td>
+    <td>@AllDownloadSizes.InvariantGlobalization.DotnetJs</td>
+    <td>@AllDownloadSizes.ILLinker.DotnetJs</td>
+  </tr>
+  <tr>
+    <th scope="row">dotnet.wasm</th>
+    <td>@AllDownloadSizes.ReleasePublish.DotnetWasm</td>
+    <td>@AllDownloadSizes.DisableTimeZoneSupport.DotnetWasm</td>
+    <td>@AllDownloadSizes.InvariantGlobalization.DotnetWasm</td>
+    <td>@AllDownloadSizes.ILLinker.DotnetWasm</td>
+  </tr>
+  <tr>
+    <th scope="row">icudt_EFIGS.dat</th>
+    <td>@AllDownloadSizes.ReleasePublish.IcudtEfigsDat</td>
+    <td>@AllDownloadSizes.DisableTimeZoneSupport.IcudtEfigsDat</td>
+    <td>@AllDownloadSizes.InvariantGlobalization.IcudtEfigsDat</td>
+    <td>@AllDownloadSizes.ILLinker.IcudtEfigsDat</td>
+    <td></td>
+  </tr>
+  <tr class="table-dark">
+    <th scope="row">TOTAL</th>
+    <td>@AllDownloadSizes.ReleasePublish.Total</td>
+    <td>@AllDownloadSizes.DisableTimeZoneSupport.Total</td>
+    <td>@AllDownloadSizes.InvariantGlobalization.Total</td>
+    <td>@AllDownloadSizes.ILLinker.Total</td>
+  </tr>
+  </tbody>
+</table>
+<p>Total savings: 729KB (or save ~40% download)</p>
+
+@code {
+
+  [CascadingParameter]
+  public AllDownloadSizes AllDownloadSizes { get; set; }
+
+}

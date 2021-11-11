@@ -1,0 +1,343 @@
+@using NSubstitute
+@using Timers
+@using Timers.Testing
+@inherits TestContext
+
+@code {
+    
+    // ToDO: https://bunit.dev/docs/verification/async-assertion.html
+
+    private readonly ITimerFactory _timerFactory = Substitute.For<ITimerFactory>();
+    private readonly FakeConditionalTimer _levelStartCountdownTimer = new();
+    private readonly FakeConditionalTimer _gameCountdownTimer = new();
+    
+    private readonly IGameNumber _gameNumber = Substitute.For<IGameNumber>();
+    private readonly IRenderedFragment _renderedFragment;
+    private readonly IRenderedComponent<GameState> _gameState;
+
+    public GameStateShould()
+    {
+        _timerFactory.NewConditionalTimer(Arg.Any<Func<TimeSpan>>()).ReturnsForAnyArgs(
+            _levelStartCountdownTimer,
+            _gameCountdownTimer
+        );
+        
+        Services.AddSingleton(_timerFactory);
+        
+        _renderedFragment = Render(@<CascadingValue Value="_gameNumber">
+                                      <GameState>
+                                          <h1>Test</h1>
+                                      </GameState>
+                                  </CascadingValue>);
+        
+        _gameState = _renderedFragment
+            .FindComponent<GameState>();
+    }
+
+    [Fact]
+    public void RenderChildContent()
+    {
+        _gameState.Should().HaveMarkup(@<h1>Test</h1>);
+    }
+
+    [Fact]
+    public void InitialiseTheGameState()
+    {
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.New);
+        _gameState.Instance.Score.Should().Be(0);
+        _gameState.Instance.TimeLeft.Should().Be(15);
+        _gameState.Instance.StartCountdown.Should().Be(0);
+    }
+
+    [Fact]
+    public void SetSelfAsCascadingParameter()
+    {
+        var cascadingValue = _renderedFragment.FindComponent<CascadingValue<IGameState>>();
+
+        _gameState.Instance.Should().Be(cascadingValue.Instance.Value);
+    }
+    
+    // StartGame
+    [Fact]
+    public void SetStatusToStartTimer_WhenStartGame()
+    {
+        ProgressGameToStartTimer();
+
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.StartTimer);
+        _gameState.Instance.StartCountdown.Should().Be(3);
+        _timerFactory.NewConditionalTimer(Arg.Any<Func<TimeSpan>>()).Received(1);
+    }
+
+    [Fact]
+    public async Task ReduceStartTimer_WhenStartTimer_AndTimerTicks()
+    {
+#pragma warning disable CS4014
+        _gameState.InvokeAsync(_gameState.Instance.StartGameAsync);
+#pragma warning restore CS4014
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.StartTimer);
+        _gameState.Instance.StartCountdown.Should().Be(3);
+        
+        await _gameState.InvokeAsync(() => _levelStartCountdownTimer.TickTimer());
+        _gameState.Instance.StartCountdown.Should().Be(2);
+        
+        await _gameState.InvokeAsync(() => _levelStartCountdownTimer.TickTimer());
+        _gameState.Instance.StartCountdown.Should().Be(1);
+        
+        await _gameState.InvokeAsync(() => _levelStartCountdownTimer.TickTimer());
+        _gameState.Instance.StartCountdown.Should().Be(0);
+    }
+    
+    [Fact]
+    public async Task StartLevelCountdownTimer_AndSetStatusToStarted_WhenStartTimerIsComplete()
+    {
+        await ProgressGameToStarted();
+
+        _timerFactory.NewConditionalTimer(Arg.Any<Func<TimeSpan>>()).Received(2);
+        await Task.Delay(500);
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.Started);
+    }
+
+    
+
+    [Fact]
+    public async Task ReduceGameCountdownTimer_WhenGameTimerTicks()
+    {
+#pragma warning disable CS4014
+        _gameState.InvokeAsync(_gameState.Instance.StartGameAsync);
+#pragma warning restore CS4014
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.StartTimer);;
+        await _gameState.InvokeAsync(() =>
+        {
+            _levelStartCountdownTimer.TickTimer();
+            _levelStartCountdownTimer.TickTimer();
+            _levelStartCountdownTimer.TickTimer();
+        });
+#pragma warning disable CS4014
+        _gameState.InvokeAsync(() => _levelStartCountdownTimer.WaitForLoopToCompleteAndCallOnTimeUp());
+#pragma warning restore CS4014
+
+        await Task.Delay(500);
+        _gameState.Instance.TimeLeft.Should().Be(15);
+        for (var i = 14; i >= 0; i--)
+        {
+            await _gameState.InvokeAsync(() => _gameCountdownTimer.TickTimer());
+            _gameState.Instance.TimeLeft.Should().Be(i);
+        }
+    }
+    
+    [Fact]
+    public async Task SetGameStatusToEnd_WhenGameTimerCompletes()
+    {
+        await ProgressGameToEnd();
+
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.End);
+    }
+
+    private async Task ProgressGameToEnd()
+    {
+#pragma warning disable CS4014
+        _gameState.InvokeAsync(_gameState.Instance.StartGameAsync);
+#pragma warning restore CS4014
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.StartTimer);
+        ;
+        await _gameState.InvokeAsync(() =>
+        {
+            _levelStartCountdownTimer.TickTimer();
+            _levelStartCountdownTimer.TickTimer();
+            _levelStartCountdownTimer.TickTimer();
+        });
+#pragma warning disable CS4014
+        _gameState.InvokeAsync(() => _levelStartCountdownTimer.WaitForLoopToCompleteAndCallOnTimeUp());
+#pragma warning restore CS4014
+        await Task.Delay(500);
+
+        for (var i = 15; i >= 0; i--)
+        {
+            await _gameState.InvokeAsync(() => _gameCountdownTimer.TickTimer());
+        }
+
+        await _gameState.InvokeAsync(() => _gameCountdownTimer.WaitForLoopToCompleteAndCallOnTimeUp());
+    }
+
+    [Fact]
+    public async Task ResetGame()
+    {
+        await _gameState.InvokeAsync(_gameState.Instance.ResetGame);
+
+        _gameNumber.Received(1).NextGame();
+    }
+
+    [Fact]
+    public async Task PauseGame_WhenGameStarted()
+    {
+        await ProgressGameToPaused();
+
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.Paused);
+    }
+
+    private async Task ProgressGameToPaused()
+    {
+        await ProgressGameToStarted();
+
+        await _gameState.InvokeAsync(() => _gameState.Instance.PauseGame());
+    }
+
+    [Fact]
+    public async Task NotPauseGame_WhenGameNew()
+    {
+        await _gameState.InvokeAsync(() => _gameState.Instance.PauseGame());
+
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.New);
+    }
+    
+    [Fact]
+    public async Task NotPauseGame_WhenGameStartTimer()
+    {
+        ProgressGameToStartTimer();
+        
+        await _gameState.InvokeAsync(() => _gameState.Instance.PauseGame());
+
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.StartTimer);
+    }
+    
+    [Fact]
+    public async Task NotPauseGame_WhenGameHasEnded()
+    {
+        await ProgressGameToEnd();
+        
+        await _gameState.InvokeAsync(() => _gameState.Instance.PauseGame());
+
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.End);
+    }
+
+    [Fact]
+    public async Task ResumeGame_WhenGameIsPaused()
+    {
+        await ProgressGameToPaused();
+
+        await _gameState.InvokeAsync(() => _gameState.Instance.ResumeGame());
+
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.Started);
+    }
+    
+    [Fact]
+    public async Task NotResumeGame_WhenGameIsNew()
+    {
+        await _gameState.InvokeAsync(() => _gameState.Instance.ResumeGame());
+
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.New);
+    }
+    
+    [Fact]
+    public async Task NotResumeGame_WhenGameStartTimer()
+    {
+        ProgressGameToStartTimer();
+        
+        await _gameState.InvokeAsync(() => _gameState.Instance.ResumeGame());
+
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.StartTimer);
+    }
+    
+    [Fact]
+    public async Task NotResumeGame_WhenGameHasEnded()
+    {
+        await ProgressGameToEnd();
+        
+        await _gameState.InvokeAsync(() => _gameState.Instance.ResumeGame());
+
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.End);
+    }
+
+    [Fact]
+    public async Task IncreaseScore_OnTargetShot_WhenGameHasStarted()
+    {
+        await ProgressGameToStarted();
+        
+        await _gameState.InvokeAsync(() => _gameState.Instance.OnTargetShot(20));
+
+        _gameState.Instance.Score.Should().Be(20);
+    }
+    
+    [Fact]
+    public async Task IncreaseScore_MultipleTargets_OnTargetShot_WhenGameHasStarted()
+    {
+        await ProgressGameToStarted();
+        
+        await _gameState.InvokeAsync(() =>
+        {
+            _gameState.Instance.OnTargetShot(20);
+            _gameState.Instance.OnTargetShot(30);
+            _gameState.Instance.OnTargetShot(50);
+        });
+
+        _gameState.Instance.Score.Should().Be(100);
+    }
+    
+    [Fact]
+    public async Task  NotIncreaseScore_OnTargetShot_WhenGameIsNew()
+    {
+        await _gameState.InvokeAsync(() => _gameState.Instance.OnTargetShot(20));
+
+        _gameState.Instance.Score.Should().Be(0);
+    }
+    
+    [Fact]
+    public async Task  NotIncreaseScore_OnTargetShot_WhenGameIsStartTimer()
+    {
+        ProgressGameToStartTimer();
+
+        await _gameState.InvokeAsync(() => _gameState.Instance.OnTargetShot(20));
+
+        _gameState.Instance.Score.Should().Be(0);
+    }
+    
+    [Fact]
+    public async Task  NotIncreaseScore_OnTargetShot_WhenGameIsPaused()
+    {
+        await ProgressGameToPaused();
+
+        await _gameState.InvokeAsync(() => _gameState.Instance.OnTargetShot(20));
+
+        _gameState.Instance.Score.Should().Be(0);
+    }
+    
+    [Fact]
+    public async Task  NotIncreaseScore_OnTargetShot_WhenGameHasEnded()
+    {
+        await ProgressGameToEnd();
+
+        await _gameState.InvokeAsync(() => _gameState.Instance.OnTargetShot(20));
+
+        _gameState.Instance.Score.Should().Be(0);
+    }
+    
+    // OnTargetShot - Status Started
+    // OnTargetShot - Status NotStarted
+    private void ProgressGameToStartTimer()
+    {
+#pragma warning disable CS4014
+        _gameState.InvokeAsync(_gameState.Instance.StartGameAsync);
+#pragma warning restore CS4014
+    }
+    
+    private async Task ProgressGameToStarted()
+    {
+#pragma warning disable CS4014
+        _gameState.InvokeAsync(_gameState.Instance.StartGameAsync);
+#pragma warning restore CS4014
+        _gameState.Instance.GameStatus.Should().Be(GameStatus.StartTimer);
+        
+        await _gameState.InvokeAsync(() =>
+        {
+            _levelStartCountdownTimer.TickTimer();
+            _levelStartCountdownTimer.TickTimer();
+            _levelStartCountdownTimer.TickTimer();
+        });
+
+#pragma warning disable CS4014
+        _gameState.InvokeAsync(() => _levelStartCountdownTimer.WaitForLoopToCompleteAndCallOnTimeUp());
+#pragma warning restore CS4014
+
+        await Task.Delay(500); // Give the UI thread time to process
+    }
+}

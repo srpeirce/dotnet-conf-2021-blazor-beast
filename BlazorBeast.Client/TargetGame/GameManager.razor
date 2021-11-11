@@ -1,0 +1,29 @@
+﻿@if (GameState.GameStatus is GameStatus.New)
+{
+    <MainScreen OnPlay="@GameState.StartGameAsync"/>
+}
+else if (GameState.GameStatus is GameStatus.Paused)
+{
+    <PauseScreen OnResume="@GameState.ResumeGame" OnQuit="@GameState.ResetGame"/>
+}
+else if (GameState.GameStatus is GameStatus.StartTimer)
+{
+    <CountdownScreen CountDownRemaining="GameState.StartCountdown"/>
+} 
+else if (GameState.GameStatus is GameStatus.End)
+{
+    <GameOverScreen Score="@GameState.Score" OnQuit="@GameState.ResetGame"/>
+}
+
+<div class="level-outer">
+    @* This is always displayed in the background - it sets the size of the board at the moment *@
+    <GameBoardHeader TimeLeft="@GameState.TimeLeft" Score="@GameState.Score" OnMenuButtonPressed="@GameState.PauseGame"/>
+    <Level1 />
+    <div class="background"></div>
+</div>
+
+
+@code {
+    [CascadingParameter]
+    private IGameState GameState { get; set; }
+}

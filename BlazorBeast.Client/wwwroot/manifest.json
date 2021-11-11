@@ -1,0 +1,21 @@
+{
+  "name": "Blazor Beast",
+  "short_name": "Blazor Beast",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#6B5D9B",
+  "theme_color": "#9F8AE7",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ]
+}

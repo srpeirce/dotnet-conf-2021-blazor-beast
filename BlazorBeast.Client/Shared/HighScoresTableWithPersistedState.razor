@@ -1,0 +1,66 @@
+﻿@using BlazorBeast.Shared.HighScores
+@inject HttpClient _http
+@implements IDisposable
+@inject PersistentComponentState _applicationState
+
+@if (_highScores == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Score</th>
+            <th>Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for (var i = 0; i < _highScores.Length; i++)
+        {
+            var (score, name) = _highScores[i];
+            <tr>
+                <td>#@(i + 1)</td>
+                <td>@score</td>
+                <td>@name</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private HighScore[]? _highScores;
+    
+    private PersistingComponentStateSubscription _persistingSubscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _persistingSubscription = _applicationState.RegisterOnPersisting(PersistForecasts);
+
+        if (_applicationState.TryTakeFromJson<HighScore[]>(nameof(HighScore), out var restoredHighScores))
+        {
+            _highScores = restoredHighScores!;
+        }
+        else
+        {
+            _highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores");
+            // highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/slow");
+            // highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/error");
+        }
+    }
+
+    private Task PersistForecasts()
+    {
+        _applicationState.PersistAsJson(nameof(HighScore), _highScores);
+
+        return Task.CompletedTask;
+    }
+
+    void IDisposable.Dispose()
+    {
+        _persistingSubscription.Dispose();
+    }
+}

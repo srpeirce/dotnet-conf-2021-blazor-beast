@@ -1,0 +1,10 @@
+﻿.overlay {
+    position: absolute;
+    background-image: url("/images/menu-bg.jpg");
+    background-position: center bottom; /* Center the image */
+    background-repeat: no-repeat; /* Do not repeat the image */
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}

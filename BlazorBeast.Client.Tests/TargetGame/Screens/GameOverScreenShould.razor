@@ -1,0 +1,33 @@
+﻿@inherits TestContext
+
+@code {
+
+    [Fact]
+    public void DisplayTheFinalScore()
+    {
+        Render(@<GameOverScreen Score="185" OnQuit="() => { }" />)
+            .FindByDataTestClass("score")
+            .Should().HaveChildMarkup("185");
+    }
+    
+    [Fact]
+    public void DisplayQuitGameButton()
+    {
+        Render(@<GameOverScreen Score="185" OnQuit="() => { }" />)
+            .FindByDataTestClass("quit-button")
+            .Should().HaveChildMarkup("Quit Game");
+    }
+    
+    [Fact]
+    public void PerformQuitAction_WhenQuitGameIsPressed()
+    {
+        var hasQuit = false;
+        void OnQuit() => hasQuit = true;
+        var quitButton = Render(@<GameOverScreen Score="185" OnQuit="OnQuit"/>)
+            .FindByDataTestClass("quit-button");
+        
+        quitButton.Click();
+
+        hasQuit.Should().BeTrue();
+    }
+}

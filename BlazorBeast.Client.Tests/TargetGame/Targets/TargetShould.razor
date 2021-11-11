@@ -1,0 +1,257 @@
+﻿@using NSubstitute
+@using Timers
+@using Timers.Testing
+@inherits TestContext
+
+@code {
+    // ToDO: https://bunit.dev/docs/verification/async-assertion.html
+    
+    private readonly FakeConditionalTimer _conditionalTimer = new();
+    private readonly ITimerFactory _timerFactory = Substitute.For<ITimerFactory>();
+    
+    private int _score = 0;
+    void OnShot(int targetValue) => _score += targetValue;
+    
+    public TargetShould()
+    {
+        _timerFactory.NewConditionalTimer(Arg.Any<Func<TimeSpan>>()).Returns(_conditionalTimer);
+        Services.AddSingleton(_timerFactory);
+    }
+
+    [Theory]
+    [InlineData(GameStatus.New)]
+    [InlineData(GameStatus.End)]
+    [InlineData(GameStatus.Paused)]
+    [InlineData(GameStatus.StartTimer)]
+    public void NotCreateTimer_WhenGameStatusIsNotStarted(GameStatus status)
+    {
+        var target = Render(@<Target GameStatus="@status" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+
+        target.Instance.IsTimerActive.Should().BeFalse();
+        _timerFactory.NewConditionalTimer(Arg.Any<Func<TimeSpan>>()).DidNotReceiveWithAnyArgs();
+    }
+    
+    [Fact]
+    public void CreateTimer_WhenGameStatusIsStarted()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+
+        target.Instance.IsTimerActive.Should().BeTrue();
+        _timerFactory.NewConditionalTimer(Arg.Any<Func<TimeSpan>>()).ReceivedWithAnyArgs(1);
+    }
+    
+    [Fact]
+    public void NotCreateTimer_WhenTimerHasAlreadyStarted()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+             .FindComponent<Target>();
+        
+         target.SetParametersAndRender(parameters => parameters
+            .Add(p => p.GameStatus, GameStatus.Started));
+        
+        target.Instance.IsTimerActive.Should().BeTrue();
+        _timerFactory.NewConditionalTimer(Arg.Any<Func<TimeSpan>>()).ReceivedWithAnyArgs(1);
+    }
+    
+    [Fact]
+    public void HaveInactiveState_WhenGameStatusIsNew()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.New" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        
+        target.Instance.State.Should().Be(TargetState.Inactive);
+        target.Should().HaveClass("inactive");
+    }
+    
+    [Fact]
+    public void HaveActiveState_WhenGameStatusIsStarted_AndTimerHasNotTicked()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        
+        target.Instance.State.Should().Be(TargetState.Active);
+        target.Should().HaveClass("active");
+    }
+    
+    [Fact]
+    public async Task SetInactiveState_WhenTimerTicks_GameStatusIsStarted()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        await target.InvokeAsync(() => _conditionalTimer.TickTimer());
+        
+        target.Instance.State.Should().Be(TargetState.Inactive);
+        target.Should().HaveClass("inactive");
+    }
+    
+    [Fact]
+    public async Task SetInactiveState_WhenTimerTicks_AndGameStatusIsStarted_AndTargetInActiveState()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        target.Instance.State.Should().Be(TargetState.Active);
+        
+        await target.InvokeAsync(() => _conditionalTimer.TickTimer());
+        
+        target.Instance.State.Should().Be(TargetState.Inactive);
+        target.Should().HaveClass("inactive");
+    }
+
+    [Fact]
+    public void SetTargetStateToShot_WhenTargetClicked_AndStateIsActive()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        target.Instance.State.Should().Be(TargetState.Active);
+        
+        target.Find("*").Click();
+        
+        target.Instance.State.Should().Be(TargetState.Shot);
+        target.Should().HaveClass("shot");
+    }
+    
+    [Fact]
+    public void CallOnShot_WhenTargetClicked_AndStateIsActive()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        target.Instance.State.Should().Be(TargetState.Active);
+        
+        target.Find("*").Click();
+
+        _score.Should().Be(20);
+    }
+    
+    [Fact]
+    public void NoChangeToState_WhenTargetClicked_AndStateIsShot()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        target.Find("*").Click();
+        target.Instance.State.Should().Be(TargetState.Shot);
+        
+        target.Find("*").Click();
+        target.Instance.State.Should().Be(TargetState.Shot);
+        target.Should().HaveClass("shot");
+    }
+    
+    [Fact]
+    public void NotCallOnShot_WhenTargetClicked_AndStateIsShot()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        target.Find("*").Click();
+        target.Instance.State.Should().Be(TargetState.Shot);
+
+        target.Find("*").Click();
+        
+        _score.Should().Be(20);
+    }
+    
+    [Fact]
+    public async Task NoChangeToState_WhenTargetClicked_AndStateIsInactive()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        await target.InvokeAsync(() => _conditionalTimer.TickTimer());
+        target.Instance.State.Should().Be(TargetState.Inactive);
+        
+        target.Find("*").Click();
+        target.Instance.State.Should().Be(TargetState.Inactive);
+        target.Should().HaveClass("inactive");
+    }
+    
+    [Fact]
+    public async Task NotCallOnShot_WhenTargetClicked_AndStateIsInactive()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        await target.InvokeAsync(() => _conditionalTimer.TickTimer());
+        target.Instance.State.Should().Be(TargetState.Inactive);
+
+        target.Find("*").Click();
+        
+        _score.Should().Be(0);
+    }
+    
+    [Fact]
+    public async Task SetActiveState_WhenTimerTicks_AndGameStatusIsStarted_AndTargetInShotState()
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        target.Find("*").Click();
+        target.Instance.State.Should().Be(TargetState.Shot);
+        
+        await target.InvokeAsync(() => _conditionalTimer.TickTimer());
+        
+        target.Instance.State.Should().Be(TargetState.Active);
+        target.Should().HaveClass("active");
+    }
+
+    [Theory]
+    [InlineData(GameStatus.New)]
+    [InlineData(GameStatus.End)]
+    [InlineData(GameStatus.Paused)]
+    [InlineData(GameStatus.StartTimer)]
+    public async Task SetInactiveStateAndStopTimer_WhenTimerTicks_AndGameStatusNotStarted_AndTargetInShotState(GameStatus updatedGameStatus)
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        target.Find("*").Click();
+        target.Instance.State.Should().Be(TargetState.Shot);
+        
+        target.SetParametersAndRender(parameters => parameters
+            .Add(p => p.GameStatus, updatedGameStatus));
+        await target.InvokeAsync(() => _conditionalTimer.TickTimer());
+        await target.InvokeAsync(() => _conditionalTimer.WaitForLoopToCompleteAndCallOnTimeUp());
+        
+        target.Instance.State.Should().Be(TargetState.Inactive);
+        target.Should().HaveClass("inactive");
+        target.Instance.IsTimerActive.Should().BeFalse();
+    }
+    
+    [Theory]
+    [InlineData(GameStatus.New)]
+    [InlineData(GameStatus.End)]
+    [InlineData(GameStatus.Paused)]
+    [InlineData(GameStatus.StartTimer)]
+    public async Task SetInactiveStateAndStopTimer_WhenTimerTicks_AndGameStatusNotStarted_AndTargetInActiveState(GameStatus updatedGameStatus)
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        target.Instance.State.Should().Be(TargetState.Active);
+        
+        target.SetParametersAndRender(parameters => parameters
+            .Add(p => p.GameStatus, updatedGameStatus));
+        await target.InvokeAsync(() => _conditionalTimer.TickTimer());
+        await target.InvokeAsync(() => _conditionalTimer.WaitForLoopToCompleteAndCallOnTimeUp());
+        
+        target.Instance.State.Should().Be(TargetState.Inactive);
+        target.Should().HaveClass("inactive");
+        target.Instance.IsTimerActive.Should().BeFalse();
+    }
+    
+    [Theory]
+    [InlineData(GameStatus.New)]
+    [InlineData(GameStatus.End)]
+    [InlineData(GameStatus.Paused)]
+    [InlineData(GameStatus.StartTimer)]
+    public async Task SetInactiveStateAndStopTimer_WhenTimerTicks_AndGameStatusNotStarted_AndTargetInInactiveState(GameStatus updatedGameStatus)
+    {
+        var target = Render(@<Target GameStatus="GameStatus.Started" OnShot="@OnShot" />)
+            .FindComponent<Target>();
+        await target.InvokeAsync(() => _conditionalTimer.TickTimer());
+        target.Instance.State.Should().Be(TargetState.Inactive);
+        
+        target.SetParametersAndRender(parameters => parameters
+            .Add(p => p.GameStatus, updatedGameStatus));
+        await target.InvokeAsync(() => _conditionalTimer.TickTimer());
+        await target.InvokeAsync(() => _conditionalTimer.WaitForLoopToCompleteAndCallOnTimeUp());
+        
+        target.Instance.State.Should().Be(TargetState.Inactive);
+        target.Should().HaveClass("inactive");
+        target.Instance.IsTimerActive.Should().BeFalse();
+    }
+}

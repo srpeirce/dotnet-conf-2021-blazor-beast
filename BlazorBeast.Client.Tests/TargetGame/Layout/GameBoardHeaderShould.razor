@@ -1,0 +1,46 @@
+﻿@inherits TestContext
+
+@code {
+    
+    [Fact]
+    public void ShowTheMenuButton()
+    {
+        Render(@<GameBoardHeader Score="100" TimeLeft="10" OnMenuButtonPressed="() => { }" />)
+            .FindByDataTestClass("menu-button")
+            .Should().HaveTag("button")
+            .And.HaveChildMarkup("Menu");
+    }
+    
+    [Fact]
+    public void PerformOnMenuButtonPressedAction_WhenMenuButtonPressed()
+    {
+        var isPressed = false;
+        void OnPressed() => isPressed = true;
+        var menuButton = 
+            Render(@<GameBoardHeader Score="100" TimeLeft="10" OnMenuButtonPressed="@OnPressed"/>)
+            .FindByDataTestClass("menu-button");
+        
+        menuButton.Click();
+
+        isPressed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ShowTimeLeft()
+    {
+        Render(@<GameBoardHeader Score="100" TimeLeft="10" OnMenuButtonPressed="() => { }" />)
+            .FindByDataTestClass("time-left")
+            .Should().HaveTag("span")
+            .And.HaveChildMarkup("10");
+    }
+    
+    [Fact]
+    public void ShowScore()
+    {
+        Render(@<GameBoardHeader Score="100" TimeLeft="10" OnMenuButtonPressed="() => { }" />)
+            .FindByDataTestClass("score")
+            .Should().HaveTag("span")
+            .And.HaveChildMarkup("100");
+    }
+    
+}

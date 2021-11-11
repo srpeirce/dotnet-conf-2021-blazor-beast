@@ -1,0 +1,62 @@
+﻿.target-outer {
+    position: relative;
+    margin: auto;
+}
+
+.scoreValue {
+    color: #512CD4;
+    font-weight: bold;
+    opacity: 0;
+    position: absolute;
+    margin-left: 50%;
+    margin-bottom: 150%;
+}
+
+.shot .scoreValue {
+    animation-name: scoreValueShot;
+    animation-duration: 1.25s;
+    animation-fill-mode: forwards;
+}
+
+.active .target {
+    animation-name: targetActivated;
+    animation-duration: .5s;
+    animation-fill-mode: forwards;
+}
+
+.inactive .target
+{
+    animation-name: targetDeactivated;
+    animation-duration: .5s;
+    animation-fill-mode: forwards;
+}
+
+.shot .target {
+    animation-name: targetShot;
+    animation-duration: 1.5s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes targetActivated {
+    0% { transform:rotateX(90deg); opacity: 100%; }
+    100% { transform:rotateX(0deg); }
+}
+
+@keyframes targetDeactivated {
+    0% { transform:rotateX(0deg); }
+    99% { transform:rotateX(90deg); }
+    100% { opacity: 0; }
+}
+
+@keyframes targetShot {
+    0% { opacity: 100%; }
+    100% { transform:rotate(1080deg); opacity: 0; }
+}
+
+@keyframes scoreValueShot {
+    0% { opacity: 0; }
+    60% { opacity: 100% }
+    100% { opacity: 0; transform: translateY(-700%); }
+}
+
+/*https://www.joshwcomeau.com/animation/keyframe-animations/*/

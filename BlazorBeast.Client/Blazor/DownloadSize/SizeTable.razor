@@ -1,0 +1,37 @@
+﻿<table class="table table-hover">
+    <tbody>
+    <tr>
+        <th scope="row">dotnet.timezones.blat</th>
+        <td>@DownloadSize.TimeZones</td>
+    </tr>
+    <tr>
+        <th scope="row">Dlls</th>
+        <td>@DownloadSize.Dlls</td>
+    </tr>
+    <tr>
+        <th scope="row">blazor.webassembly.js</th>
+        <td>@DownloadSize.BlazorWebAssemblyJs</td>
+    </tr>
+    <tr>
+        <th scope="row">dotnet.x.x.x.js</th>
+        <td>@DownloadSize.DotnetJs</td>
+    </tr>
+    <tr>
+        <th scope="row">dotnet.wasm</th>
+        <td>@DownloadSize.DotnetWasm</td>
+    </tr>
+    <tr>
+        <th scope="row">icudt_EFIGS.dat</th>
+        <td>@DownloadSize.IcudtEfigsDat</td>
+    </tr>
+    <tr class="table-dark">
+        <th scope="row">Total</th>
+        <td>@DownloadSize.Total</td>
+    </tr>
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public DownloadSize DownloadSize { get; set; }
+}

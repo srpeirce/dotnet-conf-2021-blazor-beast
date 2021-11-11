@@ -1,0 +1,51 @@
+﻿@inherits TestContext
+
+@code {
+    [Fact]
+    public void DisplayPlayGameButton_WhenRenderedOnClient()
+    {
+    // Services.AddSingleton<RenderLocation, RenderedOnClient>();
+        Render(@<MainScreen OnPlay="() => Task.CompletedTask" />)
+            .FindByDataTestClass("play-button")
+            .Should().HaveChildMarkup("Play");
+    }
+
+    [Fact]
+    public void PerformPlayAction_WhenPlayGameIsPressed()
+    {
+        // Services.AddSingleton<RenderLocation, RenderedOnClient>();
+        var isPlaying = false;
+        Task OnPlay()
+        {
+            isPlaying = true;
+            return Task.CompletedTask;
+        }
+        var quitButton = Render(@<MainScreen OnPlay="@OnPlay"/>)
+            .FindByDataTestClass("play-button");
+        
+        quitButton.Click();
+
+        isPlaying.Should().BeTrue();
+    }
+    
+    /*
+    [Fact]
+    public void DisplayLoading_WhenRenderedOnServer()
+    {
+        Services.AddSingleton<RenderLocation, RenderedOnServer>();
+        Render(@<MainScreen OnPlay="() => Task.CompletedTask"/>)
+            .FindComponent<Loading>();
+    }
+    
+    [Fact]
+    public void NotDisplayPlayGameButton_WhenRenderedOnServer()
+    {
+        Services.AddSingleton<RenderLocation, RenderedOnServer>();
+        var aut = () =>
+            Render(@<MainScreen OnPlay="() => Task.CompletedTask"/>)
+                .FindByDataTestClass("play-button");
+
+        aut.Should().Throw<ElementNotFoundException>();
+    }
+    */
+}

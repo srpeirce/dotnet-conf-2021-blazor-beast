@@ -1,0 +1,11 @@
+﻿.menu-content {
+    background-color: #A08BE8;
+    color: white;
+    border: 1px #512CD4 solid;
+}
+
+h1 {
+    color: ghostwhite;
+    text-shadow: 0 0 5px grey, 0 0 7px grey;
+    text-decoration: underline;
+}

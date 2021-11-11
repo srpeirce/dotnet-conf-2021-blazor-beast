@@ -1,0 +1,70 @@
+﻿@page "/blazor/download-size"
+
+<CascadingValue Value="_allAllDownloadSizes" IsFixed="true">
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h1>Blazor Download Sizes</h1>
+      <p>These are the download sizes of this app at time of writing - dll size includes all dlls (not Lazy Loaded).</p>
+      
+      <button class="btn btn-outline-primary" @onclick="@(() => ShowComparisonTableToggle = !ShowComparisonTableToggle)">Toggle Table</button>
+      
+      @if (ShowComparisonTableToggle)
+      {
+        <ComparisonTable />
+      }
+      else
+      {
+        <SizeComparison />
+      }
+      
+    </div>
+  </div>
+</div>
+</CascadingValue>
+
+
+@code {
+
+  private bool ShowComparisonTableToggle = false;
+
+  private readonly AllDownloadSizes _allAllDownloadSizes = new
+    (
+    new(
+      "43.6 KB",
+      "762 KB",
+      "17.2 KB",
+      "54 KB",
+      "851 KB",
+      "149 KB",
+      "1,876.8 KB"
+      ),
+    new(
+      "0 KB (-43.6 KB)",
+      "762 KB",
+      "17.2 KB",
+      "54 KB",
+      "851 KB",
+      "149 KB",
+      "1,833.2 KB (-43.6 KB)"
+      ),
+    new(
+      "0 KB",
+      "736 KB (-26 KB)",
+      "17.2 KB",
+      "54 KB",
+      "851 KB",
+      "0 KB (- 149KB)",
+      "1,658.2 KB (-175 KB)"
+      ),
+    new (
+      "0 KB",
+        "736 KB",
+        "17.2 KB",
+        "41.5 KB (-12.5 KB)",
+        "353 KB (-498 KB)",
+        "0 KB",
+        "1,147.7 KB (-510.5 KB)"
+      )
+    );
+}

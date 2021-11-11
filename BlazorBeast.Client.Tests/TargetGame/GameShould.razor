@@ -1,0 +1,55 @@
+﻿@using Timers
+@using BlazorBeast.Shared.Rendering
+@inherits TestContext
+
+@code {
+
+    public GameShould()
+    {
+        Services.AddSingleton<ITimerFactory, TimerFactory>();
+        Services.AddSingleton<RenderLocation, RenderedOnClient>();
+    }
+
+    [Fact]
+    public void RenderGameNumber()
+    {
+        Render(@<Game/>)
+            .FindComponent<GameNumber>();
+    }
+    
+    [Fact]
+    public void RenderGameState_AsChildOfGameNumber()
+    {
+        var gameNumber = Render(@<Game/>)
+            .FindComponent<GameNumber>();
+
+        gameNumber.FindComponent<GameState>();
+    }
+    
+    [Fact]
+    public async Task ResetGameState_WhenNextGameIsCalled()
+    {
+        var gameNumber = Render(@<Game/>)
+            .FindComponent<GameNumber>();
+        var gameState = gameNumber.FindComponent<GameState>();
+        gameState.Instance.GameStatus.Should().Be(GameStatus.New);
+#pragma warning disable CS4014
+        gameState.InvokeAsync(() => gameState.Instance.StartGameAsync()); // Do not await or will block - Change State so that we can prove it is reset
+#pragma warning restore CS4014
+        gameState.Instance.GameStatus.Should().Be(GameStatus.StartTimer); // Assert that we definitely did change state
+        
+        await gameNumber.InvokeAsync(() => gameNumber.Instance.NextGame());
+        
+        var newGameState = gameNumber.FindComponent<GameState>(); // Changing @key creates a new instance of `GameState`
+        newGameState.Instance.GameStatus.Should().Be(GameStatus.New);
+    }
+
+    [Fact]
+    public void RenderGameManager_AsChildOfGameState()
+    {
+        var gameState = Render(@<Game/>)
+            .FindComponent<GameState>();
+
+        gameState.FindComponent<GameManager>();
+    }
+}

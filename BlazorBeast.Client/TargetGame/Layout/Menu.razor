@@ -1,0 +1,21 @@
+﻿<Overlay>
+    <div class="main-menu row justify-content-center pt-5">
+        <div class="menu-content col-sm-6 col-md-4 justify-content-center text-center p-4">
+            <h1>Bl<span class="purple">@@</span>zor Beast</h1>
+            @if (Name is not null)
+            {
+                <h3 data-test-class="menu-name">@Name</h3>
+            }
+            @ChildContent
+        </div>
+    </div>
+</Overlay>
+
+@code {
+    
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

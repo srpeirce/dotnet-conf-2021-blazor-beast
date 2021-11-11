@@ -1,0 +1,47 @@
+﻿<div class="row justify-content-center">
+    <div class="col-2 d-flex">
+        <Target GameStatus="@GameState.GameStatus" OnShot="@GameState.OnTargetShot"/>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-2 d-flex">
+        <Target GameStatus="@GameState.GameStatus" OnShot="@GameState.OnTargetShot"/>
+    </div>
+    <div class="col-2 d-flex">
+        <Target GameStatus="@GameState.GameStatus" OnShot="@GameState.OnTargetShot"/>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-2 d-flex">
+        <Target GameStatus="@GameState.GameStatus" OnShot="@GameState.OnTargetShot"/>
+    </div>
+    <div class="col-2 d-flex">
+        <Target GameStatus="@GameState.GameStatus" OnShot="@GameState.OnTargetShot"/>
+    </div>
+    <div class="col-2 d-flex">
+        <Target GameStatus="@GameState.GameStatus" OnShot="@GameState.OnTargetShot"/>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-2 d-flex">
+        <Target GameStatus="@GameState.GameStatus" OnShot="@GameState.OnTargetShot"/>
+    </div>
+    <div class="col-2 d-flex">
+        <Target GameStatus="@GameState.GameStatus" OnShot="@GameState.OnTargetShot"/>
+    </div>
+    <div class="col-2 d-flex">
+        <Target GameStatus="@GameState.GameStatus" OnShot="@GameState.OnTargetShot"/>
+    </div>
+    <div class="col-2 d-flex">
+        <Target GameStatus="@GameState.GameStatus" OnShot="@GameState.OnTargetShot"/>
+    </div>
+</div>
+
+
+@code {
+    [CascadingParameter]
+    public IGameState GameState { get; set; }
+}

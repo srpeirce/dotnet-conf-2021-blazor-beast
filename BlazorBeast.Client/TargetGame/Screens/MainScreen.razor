@@ -1,0 +1,8 @@
+﻿<Menu>
+    <button data-test-class="play-button" class="btn btn-primary btn-lg" @onclick="@OnPlay">Play</button>
+</Menu>
+
+@code {
+    [Parameter]
+    public Func<Task> OnPlay { get; set; }
+}

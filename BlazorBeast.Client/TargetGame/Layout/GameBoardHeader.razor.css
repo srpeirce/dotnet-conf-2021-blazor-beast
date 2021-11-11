@@ -1,0 +1,22 @@
+﻿.game-board-header {
+    background-color: #A08BE8;
+    color: white;
+}
+
+.menu-button {
+    margin: 0.25rem;
+}
+
+.score {
+    display: block;
+    text-align: right;
+    font-size: 1.5rem;
+    padding-right: 0.5rem;
+}
+
+.time-left {
+    display: block;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}

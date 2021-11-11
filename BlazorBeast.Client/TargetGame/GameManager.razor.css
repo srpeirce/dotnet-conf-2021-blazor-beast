@@ -1,0 +1,7 @@
+﻿.level-outer {
+    position: relative;
+    background-image: url("/images/level-bg.jpg");
+    background-position: center bottom; /* Center the image */
+    background-repeat: no-repeat; /* Do not repeat the image */
+    background-size: cover;
+}

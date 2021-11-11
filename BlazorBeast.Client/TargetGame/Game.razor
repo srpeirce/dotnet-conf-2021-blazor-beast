@@ -1,0 +1,11 @@
+﻿<div class="game">
+    <GameNumber @ref="GameNumber">
+        <GameState @key="GameNumber.Id">
+            <GameManager />
+        </GameState>
+    </GameNumber>
+</div>
+
+@code {
+    public GameNumber GameNumber { get; private set; }
+}

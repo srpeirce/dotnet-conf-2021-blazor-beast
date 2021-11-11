@@ -1,0 +1,49 @@
+﻿@inherits TestContext
+
+@code {
+
+    [Fact]
+    public void RenderChildContent()
+    {
+        Render(@<GameNumber>
+                   <h1>Test</h1>
+               </GameNumber>)
+            .Should().HaveMarkup(@<h1>Test</h1>);
+    }
+
+    [Fact]
+    public void InitialiseTheGameNumber()
+    {
+        var gameNumber = Render(@<GameNumber>
+                   <h1>Test</h1>
+               </GameNumber>)
+            .FindComponent<GameNumber>();
+
+        gameNumber.Instance.Id.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task IncrementGameNumberOnNewGame()
+    {
+        var gameNumber = Render(@<GameNumber>
+                                    <h1>Test</h1>
+                                </GameNumber>)
+            .FindComponent<GameNumber>();
+
+        await gameNumber.InvokeAsync(() => gameNumber.Instance.NextGame());
+        
+        gameNumber.Instance.Id.Should().Be(1);
+    }
+
+    [Fact]
+    public void SetSelfAsCascadingParameter()
+    {
+        var rendered = Render(@<GameNumber>
+                                  <h1>Test</h1>
+                              </GameNumber>);
+        var gameNumber = rendered.FindComponent<GameNumber>();
+        var cascadingValue = rendered.FindComponent<CascadingValue<IGameNumber>>();
+
+        gameNumber.Instance.Should().Be(cascadingValue.Instance.Value);
+    }
+}

@@ -1,0 +1,55 @@
+﻿@inherits TestContext
+
+@code {
+
+    [Fact]
+    public void DisplayBlazorBeastHeading()
+    {
+        Render(@<Menu>
+                   <p>Test</p>
+               </Menu>)
+            .Find("h1")
+            .Should().HaveMarkup(@<h1>Bl<span class="purple">@@</span>zor Beast</h1>);
+    }
+    
+    [Fact]
+    public void NotDisplayNameHeading_WhenNameIsNull()
+    {
+        var menu = Render(@<Menu>
+                   <p>Test</p>
+               </Menu>);
+        
+        Action action = () => menu.FindByDataTestClass("menu-name");
+        action.Should().Throw<ElementNotFoundException>();
+    }
+    
+    [Fact]
+    public void DisplayNameHeading_WhenNameIsNotNull()
+    {
+        Render(@<Menu Name="A Cool Menu">
+                      <p>Test</p>
+                  </Menu>)
+            .FindByDataTestClass("menu-name")
+            .Should().HaveChildMarkup("A Cool Menu");
+    }
+
+    [Fact]
+    public void RenderAnOverlay()
+    {
+        Render(@<Menu Name="A Cool Menu">
+                   <p>Test</p>
+               </Menu>)
+            .FindComponent<Overlay>();
+    }
+
+    [Fact]
+    public void RenderChildContentInAnOverlay()
+    {
+        Render(@<Menu Name="A Cool Menu">
+                   <p data-test-id="child-content">Test</p>
+               </Menu>)
+            .FindComponent<Overlay>()
+            .FindByDataTestId("child-content")
+            .Should().HaveMarkup(@<p data-test-id="child-content">Test</p>);
+    }
+}

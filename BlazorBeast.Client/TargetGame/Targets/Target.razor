@@ -1,0 +1,107 @@
+﻿@using System.ComponentModel
+@using Timers
+@inject ITimerFactory _timerFactory
+
+<div class="@_cssClass target-outer" @onclick="@OnTargetClicked">
+    <img src="/images/target.svg" class="img-fluid p-1 target" alt="target">
+    <div class="scoreValue">@_scoreValue</div>
+</div>
+
+@code {
+
+    string _cssClass = "";
+    int _scoreValue = 20;
+    public TargetState State { get; private set; } = TargetState.Inactive;
+    Random _random = new();
+
+    [Parameter]
+    [EditorRequired]
+    public GameStatus GameStatus { get; set; }
+    
+    [Parameter]
+    [EditorRequired]
+    public Action<int> OnShot { get; set; }
+
+    public bool IsTimerActive { get; private set; }
+
+    protected override void OnInitialized()
+    {
+        SetInactiveState();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsTimerActive && GameStatus is GameStatus.Started)
+        {
+            SetActiveState();
+            IsTimerActive = true;
+            await StartTimerLoop();
+        }
+    }
+
+    private async Task StartTimerLoop()
+    {
+        var timer = _timerFactory.NewConditionalTimer(() => TimeSpan.FromMilliseconds(_random.Next(1000, 10000)));
+        timer.OnTimerTick += OnTimerTick;
+        timer.OnTimerComplete += OnTimerComplete;
+        
+        await timer.RepeatWhileAsync(() => GameStatus is GameStatus.Started);
+    }
+
+    private void OnTimerComplete()
+    {
+        IsTimerActive = false;
+        SetInactiveState();
+    }
+
+    private void OnTargetClicked()
+    {
+        if (State is TargetState.Active)
+        {
+            OnShot(_scoreValue);
+            SetShotState();
+        }
+    }
+
+    private void OnTimerTick()
+    {
+        if (GameStatus is not GameStatus.Started)
+        {
+            if (State is not TargetState.Inactive)
+            {
+                SetInactiveState();
+                return;
+            }
+        }
+        
+        if (State is TargetState.Active)
+        {
+            SetInactiveState();
+        }
+        else
+        {
+            SetActiveState();
+        }
+    }
+    
+    private void SetInactiveState()
+    {
+        State = TargetState.Inactive;
+        _cssClass = "inactive";
+        StateHasChanged();
+    }
+
+    private void SetActiveState()
+    {
+        State = TargetState.Active;
+        _cssClass = "active";
+        StateHasChanged();
+    }
+    
+    private void SetShotState()
+    {
+        State = TargetState.Shot;
+        _cssClass = "shot";
+        StateHasChanged();
+    }
+}

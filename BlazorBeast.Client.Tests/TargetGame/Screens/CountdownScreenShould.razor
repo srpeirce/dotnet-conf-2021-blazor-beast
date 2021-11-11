@@ -1,0 +1,12 @@
+﻿@inherits TestContext
+
+@code {
+
+    [Fact]
+    public void DisplayCountdownRemaining()
+    {
+        Render(@<CountdownScreen CountDownRemaining="3" />)
+            .FindByDataTestClass("countdown-remaining")
+            .Should().HaveChildMarkup("3");
+    }
+}

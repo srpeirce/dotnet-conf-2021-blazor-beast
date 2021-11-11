@@ -1,0 +1,121 @@
+﻿<h2>Release Publish</h2>
+
+<p>Publish release build</p>
+<code>dotnet publish -c Release</code>
+
+<p>With the following BlazorBeast.Client.csproj</p>
+<code>
+<pre>
+@("<PropertyGroup>")
+    @("<TargetFramework>net6.0</TargetFramework>")
+    @("<Nullable>enable</Nullable>")
+    @("<ImplicitUsings>enable</ImplicitUsings>")
+@("</PropertyGroup>")
+</pre>
+</code>
+
+<SizeTable DownloadSize="@AllDownloadSizes.ReleasePublish" />
+
+<button class="btn btn-secondary" @onclick="@(() => ShowDisableTimezoneSupport = true)">Next</button>
+
+@if (ShowDisableTimezoneSupport)
+{
+    <hr />
+    <h2>BlazorEnableTimeZoneSupport = FALSE</h2>
+    <p><a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/performance?view=aspnetcore-6.0#disable-unused-features" target="_blank">[Taken from docs]</a>A data file is included to make timezone information correct. If the app doesn't require this feature, consider disabling it.</p>
+    
+    <p>Publish release build</p>
+    <code>dotnet publish -c Release</code>
+    
+    <p>With the following BlazorBeast.Client.csproj</p>
+<code>
+<pre>
+@("<PropertyGroup>")
+    @("<TargetFramework>net6.0</TargetFramework>")
+    @("<Nullable>enable</Nullable>")
+    @("<ImplicitUsings>enable</ImplicitUsings>")
+
+    @("<BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport> <!-- Added -->")
+@("</PropertyGroup>")
+</pre>
+</code>
+
+    <SizeTable DownloadSize="@AllDownloadSizes.DisableTimeZoneSupport" />
+
+    <button class="btn btn-secondary" @onclick="@(() => ShowInvariantGlobalization = true)">Next</button>
+}
+
+@if (ShowInvariantGlobalization)
+{
+    <hr />
+    <h2>InvariantGlobalizaition = FALSE</h2>
+    <p><a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-6.0&pivots=server#invariant-globalization" target="_blank">[Taken from docs]</a> By default, Blazor WebAssembly carries globalization resources required to display values, such as dates and currency, in the user's culture. If the app doesn't require localization, you may configure the app to support the invariant culture, which is based on the en-US culture.</p>
+    
+    <p>Publish release build</p>
+    <code>dotnet publish -c Release</code>
+    
+    <p>With the following BlazorBeast.Client.csproj</p>
+    <code>
+        <pre>
+@("<PropertyGroup>")
+    @("<TargetFramework>net6.0</TargetFramework>")
+    @("<Nullable>enable</Nullable>")
+    @("<ImplicitUsings>enable</ImplicitUsings>")
+
+    @("<BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>")
+    @("<InvariantGlobalization>true</InvariantGlobalization> <!-- Added -->")
+@("</PropertyGroup>")
+</pre>
+    </code>
+    
+    <SizeTable DownloadSize="@AllDownloadSizes.InvariantGlobalization" />
+    
+    <button class="btn btn-secondary" @onclick="@(() => ShowWasmToolsWorkload = true)">Next</button>
+}
+
+@if (ShowWasmToolsWorkload)
+{
+    <hr />
+    <h2>WASM tools workload</h2>
+    <code>dotnet workload install wasm-tools</code>
+    <p><a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/webassembly?view=aspnetcore-6.0#runtime-relinking" target="_blank">[Taken from docs]</a>Runtime relinking is performed automatically when you publish an app. The size reduction is particularly dramatic when disabling globalization.</p>
+    
+    <p>Install the workload: wasm-tools [Only required once]</p>
+    <code>dotnet worload install wasm-tools</code>
+    
+    <p>Publish release build</p>
+    <code>dotnet publish -c Release</code>
+    
+    <p>With the following BlazorBeast.Client.csproj</p>
+    <code>
+        <pre>
+@("<!-- No Changes -->")
+@("<PropertyGroup>")
+    @("<TargetFramework>net6.0</TargetFramework>")
+    @("<Nullable>enable</Nullable>")
+    @("<ImplicitUsings>enable</ImplicitUsings>")
+
+    @("<BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>")
+    @("<InvariantGlobalization>true</InvariantGlobalization>")
+@("</PropertyGroup>")
+</pre>
+    </code>
+    
+    <SizeTable DownloadSize="@AllDownloadSizes.ILLinker" />
+    
+    <div class="alert alert-dark">
+        💡💡 Total savings: 729KB (or save ~40% download)
+    </div>
+}
+
+@code {
+
+    private bool ShowDisableTimezoneSupport = false;
+    private bool ShowInvariantGlobalization = false;
+    private bool ShowWasmToolsWorkload = false;
+    
+    [CascadingParameter]
+    public AllDownloadSizes AllDownloadSizes { get; set; }
+    
+
+}

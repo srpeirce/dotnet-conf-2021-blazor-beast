@@ -1,0 +1,14 @@
+﻿<Menu Name="Game Over">
+    <h3>You Scored: <span data-test-class="score">@Score</span></h3>
+    <button data-test-class="quit-button" class="btn btn-outline btn-primary" @onclick="@OnQuit">Quit Game</button>
+</Menu>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public int Score { get; set; }
+    
+    [Parameter]
+    [EditorRequired]
+    public Action OnQuit { get; set; }
+}

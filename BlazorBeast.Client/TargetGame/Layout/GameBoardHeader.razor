@@ -1,0 +1,27 @@
+﻿<div class="game-board-header">
+    <div class="row">
+        <div class="col">
+            <button data-test-class="menu-button" class="menu-button btn btn-primary btn-sm" @onclick="OnMenuButtonPressed">Menu</button>
+        </div>
+        <div class="col">
+            <span data-test-class="time-left" class="time-left">@TimeLeft</span>
+        </div>
+        <div class="col">
+            <span data-test-class="score" class="score">@Score</span>
+        </div>
+    </div>
+</div>
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public int Score { get; set; }
+    
+    [Parameter]
+    [EditorRequired]
+    public int TimeLeft { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public Action OnMenuButtonPressed { get; set; }
+}

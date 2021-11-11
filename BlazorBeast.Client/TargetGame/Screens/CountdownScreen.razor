@@ -1,0 +1,9 @@
+﻿<Menu Name="Game Starts In...">
+    <h3 data-test-class="countdown-remaining">@CountDownRemaining</h3>
+</Menu>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public int CountDownRemaining { get; set; }
+}

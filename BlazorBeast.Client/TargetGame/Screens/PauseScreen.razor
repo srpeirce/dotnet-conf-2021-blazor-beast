@@ -1,0 +1,14 @@
+﻿<Menu Name="Settings">
+    <button data-test-class="resume-button" class="btn btn-outline btn-primary" @onclick="@OnResume">Resume Game</button>
+    <button data-test-class="quit-button" class="btn btn-outline btn-primary" @onclick="@OnQuit">Quit Game</button>
+</Menu>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Func<Task> OnResume { get; set; }
+    
+    [Parameter]
+    [EditorRequired]
+    public Action OnQuit { get; set; }
+}

@@ -1,0 +1,185 @@
+﻿@using Bunit.Rendering
+@using Timers
+@using BlazorBeast.Shared.Rendering
+@inherits TestContext
+
+@code {
+
+    private readonly FakeGameState _gameState = new();
+
+    public GameManagerShould()
+    {
+        Services.AddSingleton<ITimerFactory, TimerFactory>();
+        Services.AddSingleton<RenderLocation, RenderedOnClient>();
+    }
+    
+    [Fact]
+    public void RenderMainScreen_WhenGameStatusIsNew()
+    {
+        _gameState.GameStatus = GameStatus.New;
+        
+        var screen = Render(@<CascadingValue Value="_gameState">
+                   <GameManager/>
+               </CascadingValue>)
+            .FindComponent<MainScreen>();
+        
+        screen.Instance.OnPlay();
+        _gameState.StartGameHasBeenCalled.Should().BeTrue();
+    }
+    
+    [Theory]
+    [InlineData(GameStatus.End)]
+    [InlineData(GameStatus.Paused)]
+    [InlineData(GameStatus.Started)]
+    [InlineData(GameStatus.StartTimer)]
+    public void NotRenderMainScreen_WhenGameStatusIsNotNew(GameStatus status)
+    {
+        _gameState.GameStatus = status;
+        
+        var cut = Render(@<CascadingValue Value="_gameState">
+                                    <GameManager/>
+                                </CascadingValue>);
+        
+        Action action = () => cut.FindComponent<MainScreen>();
+        action.Should().Throw<ComponentNotFoundException>();
+    }
+    
+    [Fact]
+    public void RenderPauseScreen_WhenGameStatusIsPaused()
+    {
+        _gameState.GameStatus = GameStatus.Paused;
+        
+        var screen = Render(@<CascadingValue Value="_gameState">
+                                    <GameManager/>
+                                </CascadingValue>)
+            .FindComponent<PauseScreen>();
+        
+        screen.Instance.OnResume();
+        _gameState.OnResumeHasBeenCalled.Should().BeTrue();
+        
+        screen.Instance.OnQuit();
+        _gameState.OnResetHasBeenCalled.Should().BeTrue();
+    }
+    
+    [Theory]
+    [InlineData(GameStatus.New)]
+    [InlineData(GameStatus.End)]
+    [InlineData(GameStatus.Started)]
+    [InlineData(GameStatus.StartTimer)]
+    public void NotRenderPauseScreen_WhenGameStatusIsNotPaused(GameStatus status)
+    {
+        _gameState.GameStatus = status;
+        
+        var cut = Render(@<CascadingValue Value="_gameState">
+                             <GameManager/>
+                         </CascadingValue>);
+        
+        Action action = () => cut.FindComponent<PauseScreen>();
+        action.Should().Throw<ComponentNotFoundException>();
+    }
+    
+    [Fact]
+    public void RenderCountdownScreen_WhenGameStatusIsStartTimer()
+    {
+        _gameState.GameStatus = GameStatus.StartTimer;
+        _gameState.StartCountdown = 2;
+        
+        var screen = Render(@<CascadingValue Value="_gameState">
+                                    <GameManager/>
+                                </CascadingValue>)
+            .FindComponent<CountdownScreen>();
+        
+        screen.Instance.CountDownRemaining.Should().Be(_gameState.StartCountdown);
+    }
+    
+    [Theory]
+    [InlineData(GameStatus.New)]
+    [InlineData(GameStatus.End)]
+    [InlineData(GameStatus.Paused)]
+    [InlineData(GameStatus.Started)]
+    public void NotRenderCountdownScreen_WhenGameStatusIsNotStartTimer(GameStatus status)
+    {
+        _gameState.GameStatus = status;
+        
+        var cut = Render(@<CascadingValue Value="_gameState">
+                             <GameManager/>
+                         </CascadingValue>);
+        
+        Action action = () => cut.FindComponent<CountdownScreen>();
+        action.Should().Throw<ComponentNotFoundException>();
+    }
+    
+    [Fact]
+    public void RenderGameOverScreen_WhenGameStatusIsSEnd()
+    {
+        _gameState.GameStatus = GameStatus.End;
+        _gameState.Score = 180;
+        
+        var screen = Render(@<CascadingValue Value="_gameState">
+                                <GameManager/>
+                            </CascadingValue>)
+            .FindComponent<GameOverScreen>();
+        
+        screen.Instance.Score.Should().Be(_gameState.Score);
+        
+        screen.Instance.OnQuit();
+        _gameState.OnResetHasBeenCalled.Should().BeTrue();
+    }
+    
+    [Theory]
+    [InlineData(GameStatus.New)]
+    [InlineData(GameStatus.Paused)]
+    [InlineData(GameStatus.Started)]
+    [InlineData(GameStatus.StartTimer)]
+    public void NotRenderGameOverScreen_WhenGameStatusIsNotEnd(GameStatus status)
+    {
+        _gameState.GameStatus = status;
+        
+        var cut = Render(@<CascadingValue Value="_gameState">
+                             <GameManager/>
+                         </CascadingValue>);
+        
+        Action action = () => cut.FindComponent<GameOverScreen>();
+        action.Should().Throw<ComponentNotFoundException>();
+    }
+
+    [Theory]
+    [InlineData(GameStatus.End)]
+    [InlineData(GameStatus.New)]
+    [InlineData(GameStatus.Paused)]
+    [InlineData(GameStatus.Started)]
+    [InlineData(GameStatus.StartTimer)]
+    public void RenderLevel1_WhenAnyState(GameStatus status)
+    {
+        _gameState.GameStatus = status;
+        
+        Render(@<CascadingValue Value="_gameState">
+                   <GameManager/>
+               </CascadingValue>)
+            .FindComponent<Level1>();
+    }
+    
+    [Theory]
+    [InlineData(GameStatus.End)]
+    [InlineData(GameStatus.New)]
+    [InlineData(GameStatus.Paused)]
+    [InlineData(GameStatus.Started)]
+    [InlineData(GameStatus.StartTimer)]
+    public void RenderGameBoardHeader_WhenAnyState(GameStatus status)
+    {
+        _gameState.GameStatus = status;
+        _gameState.TimeLeft = 7;
+        _gameState.Score = 999;
+        
+        var gameBoardHeader = Render(@<CascadingValue Value="_gameState">
+                   <GameManager/>
+               </CascadingValue>)
+            .FindComponent<GameBoardHeader>();
+
+        gameBoardHeader.Instance.Score.Should().Be(999);
+        gameBoardHeader.Instance.TimeLeft.Should().Be(7);
+        
+        gameBoardHeader.Instance.OnMenuButtonPressed();
+        _gameState.OnPauseHasBeenCalled.Should().BeTrue();
+    }
+}

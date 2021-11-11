@@ -1,0 +1,14 @@
+﻿@inherits TestContext
+
+@code {
+    
+    [Fact]
+    public void DisplayChildContent()
+    {
+        Render(@<Overlay>
+                   <p data-test-id="child-content">Test</p>
+               </Overlay>)
+            .FindByDataTestId("child-content")
+            .Should().HaveMarkup(@<p data-test-id="child-content">Test</p>);
+    }
+}

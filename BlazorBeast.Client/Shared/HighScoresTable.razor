@@ -1,0 +1,41 @@
+﻿@using BlazorBeast.Shared.HighScores
+@inject HttpClient _http
+
+@if (_highScores == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Score</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < _highScores.Length; i++)
+            {
+                var (score, name) = _highScores[i];
+                <tr>
+                    <td>#@(i + 1)</td>
+                    <td>@score</td>
+                    <td>@name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private HighScore[]? _highScores;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores");
+        // highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/slow");
+        // highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/error");
+    }
+}

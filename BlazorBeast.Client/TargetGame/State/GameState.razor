@@ -1,0 +1,93 @@
+@using Timers
+@implements IGameState
+
+@inject ITimerFactory _timerFactory
+
+<CascadingValue TValue="IGameState" Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    public GameStatus GameStatus { get; private set; } = GameStatus.New;
+    public int Score { get; private set; }
+    public int TimeLeft { get; private set; } = 15;
+    public int StartCountdown { get; private set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    
+    [CascadingParameter]
+    public IGameNumber GameNumber { get; set; }
+
+    public void OnTargetShot(int targetValue)
+    {
+        if (GameStatus is GameStatus.Started)
+        {
+            Score += targetValue;
+            StateHasChanged();
+        }
+    }
+    
+    public Task StartGameAsync()
+    {
+        return StartGameTimer();
+    }
+
+    public void ResetGame()
+    {
+        GameNumber.NextGame();
+    }
+    
+    public void PauseGame()
+    {
+        if (GameStatus is GameStatus.Started)
+        {
+            GameStatus = GameStatus.Paused;   
+        }
+    }
+
+    public async Task ResumeGame()
+    {
+        if (GameStatus is GameStatus.Paused)
+        {
+            GameStatus = GameStatus.Started;   
+        }
+    }
+    
+    private async Task StartGameTimer()
+    {
+        GameStatus = GameStatus.StartTimer;
+        StartCountdown = 3;
+
+        var levelStartTimer = _timerFactory.NewConditionalTimer(() => TimeSpan.FromSeconds(1));
+        levelStartTimer.OnTimerTick += () =>
+        {
+            StartCountdown--;
+            StateHasChanged();
+        };
+        levelStartTimer.OnTimerCompleteAsync += StartLevelTimerAsync;
+
+        StateHasChanged();
+        await levelStartTimer.RepeatWhileAsync(() => StartCountdown > 0);
+    }
+
+    private async Task StartLevelTimerAsync()
+    {
+        GameStatus = GameStatus.Started;
+        StateHasChanged();
+        
+        var levelTimer = _timerFactory.NewConditionalTimer(() => TimeSpan.FromSeconds(1));
+        levelTimer.OnTimerTick += () =>
+        {
+            --TimeLeft;
+            StateHasChanged();
+        };
+        levelTimer.OnTimerComplete += () =>
+        {
+            GameStatus = GameStatus.End;
+            StateHasChanged();
+        };
+        
+        await levelTimer.RepeatWhileAsync(() => TimeLeft > 0);
+    }
+}
