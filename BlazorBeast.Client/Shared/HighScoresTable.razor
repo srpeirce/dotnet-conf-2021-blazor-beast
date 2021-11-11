@@ -34,8 +34,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores");
-        // _highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/slow");
+        // _highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores");
+        _highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/slow");
         // _highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/error");
     }
 }
