@@ -50,4 +50,17 @@
             .FindComponent<Loading>();
     }
     */
+    
+    /*
+    [Fact]
+    public void NotDisplayLoading_WhenRenderedOnClient()
+    {
+        Services.AddSingleton<RenderLocation, RenderedOnClient>();
+        
+        var aut = () => Render(@<MainScreen OnPlay="() => Task.CompletedTask"/>)
+            .FindComponent<Loading>();
+        
+        aut.Should().Throw<ComponentNotFoundException>();
+    }
+    */
 }
