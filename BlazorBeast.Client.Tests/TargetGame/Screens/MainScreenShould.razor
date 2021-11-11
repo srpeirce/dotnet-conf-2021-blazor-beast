@@ -30,14 +30,6 @@
     
     /*
     [Fact]
-    public void DisplayLoading_WhenRenderedOnServer()
-    {
-        Services.AddSingleton<RenderLocation, RenderedOnServer>();
-        Render(@<MainScreen OnPlay="() => Task.CompletedTask"/>)
-            .FindComponent<Loading>();
-    }
-    
-    [Fact]
     public void NotDisplayPlayGameButton_WhenRenderedOnServer()
     {
         Services.AddSingleton<RenderLocation, RenderedOnServer>();
@@ -46,6 +38,16 @@
                 .FindByDataTestClass("play-button");
 
         aut.Should().Throw<ElementNotFoundException>();
+    }
+    */
+    
+    /*
+    [Fact]
+    public void DisplayLoading_WhenRenderedOnServer()
+    {
+        Services.AddSingleton<RenderLocation, RenderedOnServer>();
+        Render(@<MainScreen OnPlay="() => Task.CompletedTask"/>)
+            .FindComponent<Loading>();
     }
     */
 }
