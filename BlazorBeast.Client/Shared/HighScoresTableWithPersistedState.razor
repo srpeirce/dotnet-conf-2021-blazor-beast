@@ -38,7 +38,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _persistingSubscription = _applicationState.RegisterOnPersisting(PersistForecasts);
+        _persistingSubscription = _applicationState.RegisterOnPersisting(PersistHighScores);
 
         if (_applicationState.TryTakeFromJson<HighScore[]>(nameof(HighScore), out var restoredHighScores))
         {
@@ -46,13 +46,13 @@ else
         }
         else
         {
-            _highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores");
-            // highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/slow");
-            // highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/error");
+            //_highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores");
+            _highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/slow");
+            // _highScores = await _http.GetFromJsonAsync<HighScore[]>("api/high-scores/error");
         }
     }
 
-    private Task PersistForecasts()
+    private Task PersistHighScores()
     {
         _applicationState.PersistAsJson(nameof(HighScore), _highScores);
 
