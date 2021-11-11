@@ -1,5 +1,10 @@
 using BlazorBeast.Server;
+using BlazorBeast.Shared.Rendering;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Timers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,9 +14,14 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+    
+// Required to allow lazy load of assemblies in Server. Doesn't need adding to Client.
+builder.Services.AddScoped<LazyAssemblyLoader>();
 
 // builder.Services.AddSingleton<ITimerFactory, TimerFactory>();
 // builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri( sp.GetRequiredService<NavigationManager>().BaseUri ) });
+
+// builder.Services.AddSingleton<RenderLocation, RenderedOnServer>();
 
 var app = builder.Build();
 
