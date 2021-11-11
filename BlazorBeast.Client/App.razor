@@ -1,8 +1,10 @@
 ﻿@using System.Reflection
 @using BlazorBeast.Policies
+@using BlazorBeast.Shared.Versioning
 
 @* @inject LazyAssemblyLoader _lazyAssemblyLoader *@
 
+<CascadingValue Value="@(new AppVersion(Version))">
 <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="@_additionalAssemblies">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
@@ -15,9 +17,13 @@
         </LayoutView>
     </NotFound>
 </Router>
+</CascadingValue>
 
 
 @code {
+    
+    [Parameter]
+    public string Version { get; set; }
 
     private readonly List<Assembly> _additionalAssemblies = new()
     {

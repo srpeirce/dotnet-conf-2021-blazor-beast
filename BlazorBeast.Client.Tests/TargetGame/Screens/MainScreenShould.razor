@@ -1,10 +1,12 @@
-﻿@inherits TestContext
+﻿@using BlazorBeast.Shared.Rendering
+@using Bunit.Rendering
+@inherits TestContext
 
 @code {
     [Fact]
     public void DisplayPlayGameButton_WhenRenderedOnClient()
     {
-    // Services.AddSingleton<RenderLocation, RenderedOnClient>();
+        Services.AddSingleton<RenderLocation, RenderedOnClient>();
         Render(@<MainScreen OnPlay="() => Task.CompletedTask" />)
             .FindByDataTestClass("play-button")
             .Should().HaveChildMarkup("Play");
@@ -13,7 +15,7 @@
     [Fact]
     public void PerformPlayAction_WhenPlayGameIsPressed()
     {
-        // Services.AddSingleton<RenderLocation, RenderedOnClient>();
+        Services.AddSingleton<RenderLocation, RenderedOnClient>();
         var isPlaying = false;
         Task OnPlay()
         {
@@ -28,7 +30,6 @@
         isPlaying.Should().BeTrue();
     }
     
-    /*
     [Fact]
     public void NotDisplayPlayGameButton_WhenRenderedOnServer()
     {
@@ -39,9 +40,7 @@
 
         aut.Should().Throw<ElementNotFoundException>();
     }
-    */
     
-    /*
     [Fact]
     public void DisplayLoading_WhenRenderedOnServer()
     {
@@ -49,9 +48,7 @@
         Render(@<MainScreen OnPlay="() => Task.CompletedTask"/>)
             .FindComponent<Loading>();
     }
-    */
     
-    /*
     [Fact]
     public void NotDisplayLoading_WhenRenderedOnClient()
     {
@@ -62,5 +59,4 @@
         
         aut.Should().Throw<ComponentNotFoundException>();
     }
-    */
 }

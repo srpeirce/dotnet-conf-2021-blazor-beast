@@ -7,7 +7,14 @@
         <div class="col-md-6">
             <h1 class="text-center">High Scores</h1>
             <p>Note: These scores are hardcoded in the API.</p>
-            <HighScoresTable />
+            <ErrorBoundary>
+                <ChildContent>
+                    <HighScoresTableWithPersistedState/>    
+                </ChildContent>
+                <ErrorContent>
+                    <p class="alert alert-danger">Oh no, please try again later</p>
+                </ErrorContent>
+            </ErrorBoundary>
         </div>
     </div>
 </div>

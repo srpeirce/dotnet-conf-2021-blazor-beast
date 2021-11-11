@@ -1,10 +1,12 @@
 ﻿@page "/"
 @using BlazorBeast.Client
+@using BlazorBeast.Shared.Versioning
 @namespace BlazorBeast.Server.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     Layout = "_Layout";
+    var version = AppVersion.FromEntryAssembly();
 }
 
-<div id="loading">Loading...</div>
-<component type="typeof(App)" render-mode="WebAssembly"/>
+<component type="typeof(App)" render-mode="WebAssemblyPrerendered" param-Version="@version.Version"/>
+<persist-component-state />

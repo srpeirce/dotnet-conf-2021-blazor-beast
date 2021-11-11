@@ -6,8 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
 
     <!-- Size Optimisatoins example -->
-<!--    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>-->
-<!--    <InvariantGlobalization>true</InvariantGlobalization>-->
+    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+    <InvariantGlobalization>true</InvariantGlobalization>
 
     <!-- ServiceWorker example -->
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>

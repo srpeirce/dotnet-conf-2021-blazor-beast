@@ -1,5 +1,16 @@
-﻿<Menu>
-    <button data-test-class="play-button" class="btn btn-primary btn-lg" @onclick="@OnPlay">Play</button>
+﻿@using BlazorBeast.Shared.Rendering
+@inject RenderLocation _renderLocation
+
+<Menu>
+    @if (_renderLocation is RenderedOnClient)
+    {
+        <button data-test-class="play-button" class="btn btn-primary btn-lg" @onclick="@OnPlay">Play</button>
+    }
+    else
+    {
+        <Loading />   
+    }
+
 </Menu>
 
 @code {
